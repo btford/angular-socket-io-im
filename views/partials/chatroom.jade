@@ -1,0 +1,18 @@
+a(href='/') List of Rooms
+
+h2 Welcome to the "{{room.name}}" chat room
+
+.col
+  h3 Messages
+  .overflowable
+    p(ng-repeat='message in room.messages',
+      ng-class='{alert: message.user == "alert"}') {{message.user}}: {{message.text}}
+
+  form(ng-submit='sendMessage()')
+    input(ng-model='message')
+    input(type='submit', value='Send')
+
+.col
+  h3 Users
+  .overflowable
+    p(ng-repeat='user in room.users') {{user}}
