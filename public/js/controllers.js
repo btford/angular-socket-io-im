@@ -5,6 +5,9 @@
 
 function AppCtrl($scope, socket) {
 
+  // Socket listeners
+  // ================
+
   socket.on('set:name', function (data) {
     $scope.name = data.name;
     $scope.users = data.users;
@@ -16,29 +19,6 @@ function AppCtrl($scope, socket) {
     $scope.messages.push(message);
     $scope.$apply();
   });
-
-  var changeName = function (oldName, newName) {
-
-    // retroactively rename that user's messages
-    $scope.messages.forEach(function (message) {
-      if (message.user === oldName) {
-        message.user = newName;
-      }
-    });
-
-    // rename user in list of users
-    var i;
-    for (i = 0; i < $scope.users.length; i++) {
-      if ($scope.users[i] === oldName) {
-        $scope.users[i] = newName;
-      }
-    }
-
-    $scope.messages.push({
-      user: 'chatroom',
-      text: 'User ' + oldName + ' is now known as ' + newName + '.'
-    });
-  }
 
   socket.on('change:name', function (data) {
     changeName(data.oldName, data.newName);
@@ -71,6 +51,35 @@ function AppCtrl($scope, socket) {
 
     $scope.$apply();
   });
+
+  // Private helpers
+  // ===============
+
+  var changeName = function (oldName, newName) {
+
+    // retroactively rename that user's messages
+    $scope.messages.forEach(function (message) {
+      if (message.user === oldName) {
+        message.user = newName;
+      }
+    });
+
+    // rename user in list of users
+    var i;
+    for (i = 0; i < $scope.users.length; i++) {
+      if ($scope.users[i] === oldName) {
+        $scope.users[i] = newName;
+      }
+    }
+
+    $scope.messages.push({
+      user: 'chatroom',
+      text: 'User ' + oldName + ' is now known as ' + newName + '.'
+    });
+  }
+
+  // Methods published to the scope
+  // ==============================
 
   $scope.changeName = function () {
     socket.emit('change:name', {
