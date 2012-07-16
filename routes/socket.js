@@ -48,30 +48,6 @@ var userNames = (function () {
   };
 }());
 
-
-var messages = (function () {
-  var messages = [];
-
-  var add = function (user, text) {
-    if (messages.length > 10) {
-      messages.shift();
-    }
-    messages.push({
-      user: user,
-      text: text
-    });
-  };
-
-  var get = function () {
-    return messages;
-  };
-
-  return {
-    add: add,
-    get: get
-  };
-}());
-
 // export function for listening to the socket
 module.exports = function (socket) {
   var name = userNames.getDefault();
@@ -79,10 +55,10 @@ module.exports = function (socket) {
   // send the new user their name
   socket.emit('set:name', {
     name: name,
-    messages: messages.get(),
     users: userNames.get()
   });
 
+  // notify other clients that a new user has joined
   socket.broadcast.emit('user:join', {
     name: name
   });
@@ -93,7 +69,6 @@ module.exports = function (socket) {
       user: name,
       text: data.message
     });
-    messages.add(name, data.message);
   });
 
   // validate a user's name change, and broadcast it on success
@@ -103,15 +78,6 @@ module.exports = function (socket) {
       userNames.free(oldName);
 
       name = data.name;
-
-      // update message list
-      
-      var i;
-      for (i = 0; i < messages.length; i++) {
-        if (messages[i].user === oldName) {
-          messages[i].user = name;
-        }
-      }
       
       socket.broadcast.emit('change:name', {
         oldName: oldName,
