@@ -1,64 +1,86 @@
 // Keep track of which names are used so that there are no duplicates
-var userNames = {};
+var userNames = (function () {
+  var names = {};
 
-var setUserName = function (name) {
-  if (!name || userNames[name]) {
-    return false;
-  } else {
-    userNames[name] = true;
-    return true;
-  }
-};
+  var claim = function (name) {
+    if (!name || userNames[name]) {
+      return false;
+    } else {
+      userNames[name] = true;
+      return true;
+    }
+  };
 
-var freeUserName = function (name) {
-  if (userNames[name]) {
-    delete userNames[name];
-  }
-};
+  // find the lowest unused "guest" name and claim it
+  var getDefault = function () {
+    var name,
+      nextUserId = 1;
 
-// find the lowest unused "guest" name and claim it
-var newUserName = function () {
-  var name,
-    nextUserId = 1;
+    do {
+      name = 'Guest ' + nextUserId;
+      nextUserId += 1;
+    } while (!claim(name));
 
-  do {
-    name = 'Guest ' + nextUserId;
-    nextUserId += 1;
-  } while (!setUserName(name));
+    return name;
+  };
 
-  return name;
-};
+  // serialize claimed names as an array
+  var get = function () {
+    var res = [];
+    for (user in userNames) {
+      res.push(user);
+    }
 
-var getUsers = function () {
-  var res = [];
-  for (user in userNames) {
-    res.push(user);
-  }
+    return res;
+  };
 
-  return res;
-};
+  var free = function (name) {
+    if (userNames[name]) {
+      delete userNames[name];
+    }
+  };
 
-var messages = [];
+  return {
+    claim: claim,
+    free: free,
+    get: get,
+    getDefault: getDefault
+  };
+}());
 
-var addMessage = function (user, text) {
-  if (messages.length > 10) {
-    messages.shift();
-  }
-  messages.push({
-    user: user,
-    text: text
-  });
-}
+
+var messages = (function () {
+  var messages = [];
+
+  var add = function (user, text) {
+    if (messages.length > 10) {
+      messages.shift();
+    }
+    messages.push({
+      user: user,
+      text: text
+    });
+  };
+
+  var get = function () {
+    return messages;
+  };
+
+  return {
+    add: add,
+    get: get
+  };
+}());
 
 // export function for listening to the socket
 module.exports = function (socket) {
-  var name = newUserName();
+  var name = userNames.getDefault();
 
   // send the new user their name
   socket.emit('set:name', {
     name: name,
-    messages: messages,
-    users: getUsers()
+    messages: messages.get(),
+    users: userNames.get()
   });
 
   socket.broadcast.emit('user:join', {
@@ -71,14 +93,14 @@ module.exports = function (socket) {
       user: name,
       text: data.message
     });
-    addMessage(name, data.message);
+    messages.add(name, data.message);
   });
 
   // validate a user's name change, and broadcast it on success
   socket.on('change:name', function (data, fn) {
-    if (setUserName(data.name)) {
+    if (userNames.claim(data.name)) {
       var oldName = name;
-      freeUserName(oldName);
+      userNames.free(oldName);
 
       name = data.name;
 
@@ -107,6 +129,6 @@ module.exports = function (socket) {
     socket.broadcast.emit('user:left', {
       name: name
     });
-    freeUserName(name);
+    userNames.free(name);
   });
 };
