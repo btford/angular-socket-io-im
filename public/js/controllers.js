@@ -2,16 +2,14 @@
 
 /* Controllers */
 
-
 function AppCtrl($scope, socket) {
 
   // Socket listeners
   // ================
 
-  socket.on('set:name', function (data) {
+  socket.on('init', function (data) {
     $scope.name = data.name;
     $scope.users = data.users;
-    $scope.messages = data.messages;
     $scope.$apply();
   });
 
@@ -56,14 +54,6 @@ function AppCtrl($scope, socket) {
   // ===============
 
   var changeName = function (oldName, newName) {
-
-    // retroactively rename that user's messages
-    $scope.messages.forEach(function (message) {
-      if (message.user === oldName) {
-        message.user = newName;
-      }
-    });
-
     // rename user in list of users
     var i;
     for (i = 0; i < $scope.users.length; i++) {
@@ -98,6 +88,8 @@ function AppCtrl($scope, socket) {
       }
     });
   };
+
+  $scope.messages = [];
 
   $scope.sendMessage = function () {
     socket.emit('send:message', {

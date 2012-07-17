@@ -3,16 +3,16 @@ var userNames = (function () {
   var names = {};
 
   var claim = function (name) {
-    if (!name || userNames[name]) {
+    if (!name || names[name]) {
       return false;
     } else {
-      userNames[name] = true;
+      names[name] = true;
       return true;
     }
   };
 
   // find the lowest unused "guest" name and claim it
-  var getDefault = function () {
+  var getGuestName = function () {
     var name,
       nextUserId = 1;
 
@@ -27,7 +27,7 @@ var userNames = (function () {
   // serialize claimed names as an array
   var get = function () {
     var res = [];
-    for (user in userNames) {
+    for (user in names) {
       res.push(user);
     }
 
@@ -35,8 +35,8 @@ var userNames = (function () {
   };
 
   var free = function (name) {
-    if (userNames[name]) {
-      delete userNames[name];
+    if (names[name]) {
+      delete names[name];
     }
   };
 
@@ -44,16 +44,16 @@ var userNames = (function () {
     claim: claim,
     free: free,
     get: get,
-    getDefault: getDefault
+    getGuestName: getGuestName
   };
 }());
 
 // export function for listening to the socket
 module.exports = function (socket) {
-  var name = userNames.getDefault();
+  var name = userNames.getGuestName();
 
-  // send the new user their name
-  socket.emit('set:name', {
+  // send the new user their name and a list of users
+  socket.emit('init', {
     name: name,
     users: userNames.get()
   });
