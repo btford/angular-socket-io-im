@@ -10,16 +10,18 @@ app.factory('socket', function ($rootScope) {
   return {
     on: function (eventName, callback) {
       socket.on(eventName, function () {  
-        callback.apply(socket, arguments);
-        $rootScope.$apply();
+        $rootScope.$apply(function () {
+          callback.apply(socket, arguments);
+        });
       });
     },
     emit: function (eventName, data, callback) {
       socket.emit(eventName, data, function () {
-        if (callback) {
-          callback.apply(socket, arguments);
-        }
-        $rootScope.$apply();
+        $rootScope.$apply(function () {
+          if (callback) {
+            callback.apply(socket, arguments);
+          }
+        });
       })
     }
   };
