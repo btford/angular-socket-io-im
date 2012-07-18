@@ -10,17 +10,14 @@ function AppCtrl($scope, socket) {
   socket.on('init', function (data) {
     $scope.name = data.name;
     $scope.users = data.users;
-    $scope.$apply();
   });
 
   socket.on('send:message', function (message) {
     $scope.messages.push(message);
-    $scope.$apply();
   });
 
   socket.on('change:name', function (data) {
     changeName(data.oldName, data.newName);
-    $scope.$apply();
   });
 
   socket.on('user:join', function (data) {
@@ -29,7 +26,6 @@ function AppCtrl($scope, socket) {
       text: 'User ' + data.name + ' has joined.'
     });
     $scope.users.push(data.name);
-    $scope.$apply();
   });
 
   // add a message to the conversation when a user disconnects or leaves the room
@@ -46,8 +42,6 @@ function AppCtrl($scope, socket) {
         break;
       }
     }
-
-    $scope.$apply();
   });
 
   // Private helpers
@@ -83,8 +77,6 @@ function AppCtrl($scope, socket) {
 
         $scope.name = $scope.newName;
         $scope.newName = '';
-
-        $scope.$apply();
       }
     });
   };
