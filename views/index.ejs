@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html ng-app='myApp'>
+  <head>
+    <meta charset='utf8'>
+    <base href='/'>
+    <title>Angular Socket.io IM Demo App</title>
+    <link rel='stylesheet' href='/css/app.css'>
+  </head>
+  <body>
+    <h1>Angular Socket.io IM Demo App</h1>
+    <div ng-controller='AppCtrl'>
+      <div class='col'>
+        <h3>Messages</h3>
+        <div class='overflowable'>
+          <p ng-repeat='message in messages' ng-class='{alert: message.user == "chatroom"}'>{{message.user}}: {{message.text}}</p>
+        </div>
+      </div>
+      <div class='col'>
+        <h3>Users</h3>
+        <div class='overflowable'>
+          <p ng-repeat='user in users'>{{user}}</p>
+        </div>
+      </div>
+      <div class='clr'>
+        <form ng-submit='sendMessage()'>Message: <input size='60' ng-model='message'>
+          <input type='submit' value='Send'>
+        </form>
+      </div>
+      <div class='clr'>
+        <h3>Change your name</h3>
+        <p>Your current user name is {{name}}</p>
+        <form ng-submit='changeName()'>
+          <input ng-model='newName'>
+          <input type='submit' value='Change Name'>
+        </form>
+      </div>
+    </div>
+    <script src='js/lib/angular/angular.js'></script>
+    <script src='/socket.io/socket.io.js'></script>
+    <script src='js/app.js'></script>
+    <script src='js/services.js'></script>
+    <script src='js/controllers.js'></script>
+    <script src='js/filters.js'></script>
+    <script src='js/directives.js'></script>
+  </body>
+</html>   
